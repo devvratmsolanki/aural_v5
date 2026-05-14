@@ -232,7 +232,6 @@ export const Player = () => {
               </div>
               <div className="flex items-center gap-5 flex-wrap justify-center">
                 <button onClick={() => { setFullOpen(false); setExtrasTab("lyrics"); setExtrasOpen(true); }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"><Mic2 className="h-4 w-4" /> Lyrics</button>
-                <button onClick={() => { setFullOpen(false); setExtrasTab("voice"); setExtrasOpen(true); }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"><MessageCircleHeart className="h-4 w-4" /> Voice</button>
                 <button onClick={() => { setFullOpen(false); setExtrasTab("letters"); setExtrasOpen(true); }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"><StickyNote className="h-4 w-4" /> Letters</button>
                 <button onClick={toggleLike} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"><Heart className={`h-4 w-4 ${liked ? "fill-primary text-primary" : ""}`} /> {liked ? "Liked" : "Like"}</button>
               </div>
