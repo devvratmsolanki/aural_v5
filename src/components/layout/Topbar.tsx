@@ -1,11 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Search, User as UserIcon, Shield, LogOut, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { supabase } from "@/integrations/supabase/client";
 import { usePlayer } from "@/contexts/PlayerContext";
 import logo from "@/assets/logo.png";
 
@@ -19,14 +18,8 @@ const fmt = (s: number) => {
 export const Topbar = () => {
   const [q, setQ] = useState("");
   const navigate = useNavigate();
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, profile, signOut } = useAuth();
   const { current, position, duration } = usePlayer();
-  const [profile, setProfile] = useState<{ name: string | null; avatar_url: string | null } | null>(null);
-
-  useEffect(() => {
-    if (!user) { setProfile(null); return; }
-    supabase.from("profiles").select("name,avatar_url").eq("id", user.id).maybeSingle().then(({ data }) => setProfile(data ?? null));
-  }, [user]);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();

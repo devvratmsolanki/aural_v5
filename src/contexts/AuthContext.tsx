@@ -1,12 +1,16 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Session, User } from "@supabase/supabase-js";
+
+interface Profile { name: string | null; avatar_url: string | null }
 
 interface AuthCtx {
   user: User | null;
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
+  profile: Profile | null;
+  refreshProfile: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
@@ -19,19 +23,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  const fetchProfile = useCallback(async (uid: string) => {
+    const { data } = await supabase.from("profiles").select("name,avatar_url").eq("id", uid).maybeSingle();
+    setProfile(data ?? null);
+  }, []);
+
+  const refreshProfile = useCallback(async () => {
+    if (!user) return;
+    await fetchProfile(user.id);
+  }, [user, fetchProfile]);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        // defer to avoid deadlock
         setTimeout(async () => {
           const { data } = await supabase.from("user_roles").select("role").eq("user_id", s.user.id);
           setIsAdmin(!!data?.some((r) => r.role === "admin"));
+          await fetchProfile(s.user.id);
         }, 0);
       } else {
         setIsAdmin(false);
+        setProfile(null);
       }
     });
 
@@ -42,12 +58,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         supabase.from("user_roles").select("role").eq("user_id", s.user.id).then(({ data }) => {
           setIsAdmin(!!data?.some((r) => r.role === "admin"));
         });
+        fetchProfile(s.user.id);
       }
       setLoading(false);
     });
 
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [fetchProfile]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -69,7 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <Ctx.Provider value={{ user, session, loading, isAdmin, signIn, signUp, signOut }}>
+    <Ctx.Provider value={{ user, session, loading, isAdmin, profile, refreshProfile, signIn, signUp, signOut }}>
       {children}
     </Ctx.Provider>
   );

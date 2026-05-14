@@ -10,7 +10,7 @@ import { emailToUsername } from "@/lib/auth";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -35,6 +35,7 @@ const Profile = () => {
     const { data } = supabase.storage.from("avatars").getPublicUrl(path);
     setAvatar(data.publicUrl);
     await supabase.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", user.id);
+    await refreshProfile();
     toast.success("Avatar updated");
   };
 
@@ -43,7 +44,9 @@ const Profile = () => {
     setSaving(true);
     const { error } = await supabase.from("profiles").update({ name: name.slice(0, 100) }).eq("id", user.id);
     setSaving(false);
-    if (error) toast.error(error.message); else toast.success("Saved");
+    if (error) { toast.error(error.message); return; }
+    await refreshProfile();
+    toast.success("Saved");
   };
 
   const changePassword = async () => {
