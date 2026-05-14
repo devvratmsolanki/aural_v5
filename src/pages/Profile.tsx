@@ -10,7 +10,7 @@ import { emailToUsername } from "@/lib/auth";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
-  const { user, isAdmin, signOut, refreshProfile } = useAuth();
+  const { user, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -87,14 +87,12 @@ const Profile = () => {
       <div className="text-sm text-muted-foreground">Username: {emailToUsername(user?.email)}</div>
       <Button onClick={save} disabled={saving}>{saving ? "Saving..." : "Save changes"}</Button>
 
-      {isAdmin && (
-        <div className="pt-8 border-t border-border space-y-4">
-          <h2 className="text-lg font-semibold tracking-tight">Change password</h2>
-          <div><Label htmlFor="old-pw">Current password</Label><Input id="old-pw" type="password" value={oldPw} onChange={(e) => setOldPw(e.target.value)} autoComplete="current-password" /></div>
-          <div><Label htmlFor="new-pw">New password</Label><Input id="new-pw" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} autoComplete="new-password" /></div>
-          <Button onClick={changePassword} disabled={pwBusy || !oldPw || !newPw}>{pwBusy ? "Updating..." : "Update password"}</Button>
-        </div>
-      )}
+      <div className="pt-8 border-t border-border space-y-4">
+        <h2 className="text-lg font-semibold tracking-tight">Change password</h2>
+        <div><Label htmlFor="old-pw">Current password</Label><Input id="old-pw" type="password" value={oldPw} onChange={(e) => setOldPw(e.target.value)} autoComplete="current-password" /></div>
+        <div><Label htmlFor="new-pw">New password</Label><Input id="new-pw" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} autoComplete="new-password" /></div>
+        <Button onClick={changePassword} disabled={pwBusy || !oldPw || !newPw}>{pwBusy ? "Updating..." : "Update password"}</Button>
+      </div>
     </div>
   );
 };
