@@ -169,12 +169,10 @@ const AdminSongs = () => {
           await supabase.from("song_tags").insert(form.tag_ids.map((tag_id) => ({ song_id: songId!, tag_id })));
         }
       }
-      // Notify all non-admin users when a private note is added or changed
+      // Notify all other users immediately when a private note is added or changed
       if (remarksBecameSet && songId && user) {
-        const { data: adminIds } = await supabase.from("user_roles").select("user_id").eq("role", "admin");
-        const adminSet = new Set((adminIds ?? []).map((r: any) => r.user_id));
         const { data: allProfiles } = await supabase.from("profiles").select("id");
-        const recipients = (allProfiles ?? []).filter((p: any) => !adminSet.has(p.id));
+        const recipients = (allProfiles ?? []).filter((p: any) => p.id !== user.id);
         if (recipients.length) {
           await supabase.from("notifications").insert(
             recipients.map((p: any) => ({
